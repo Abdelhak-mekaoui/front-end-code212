@@ -3,8 +3,54 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
+import { useState } from "react";
 
 const FormLayout = () => {
+  const [name, setName] = useState("");
+  const [provider, setProvider] = useState("");
+  const [validUntil, setValidUntil] = useState<Date | null>(null);
+  const [description, setDescription] = useState("");
+  const [realPrice, setRealPrice] = useState("");
+
+  const handleDateChange = (selectedDate: Date) => {
+    setValidUntil(selectedDate);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const certificate = {
+      name,
+      provider,
+      validUntil,
+      description,
+      realPrice: parseFloat(realPrice),
+    };
+
+    try {
+      const response = await fetch("http://localhost:8082/api/certificates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(certificate),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save certificate");
+      }
+
+      // Clear form fields on successful save
+      setName("");
+      setProvider("");
+      setValidUntil(null);
+      setDescription("");
+      setRealPrice("");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb pageName="Add new certificate program" />
@@ -12,14 +58,14 @@ const FormLayout = () => {
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
         
         <div className="flex flex-col gap-9">
-          {/* <!-- Sign Up Form --> */}
+          {/* <!-- Certificate Form --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
               <h3 className="font-medium text-black dark:text-white">
-                Sign Up Form
+                Add New Certificate
               </h3>
             </div>
-            <form action="#">
+            <form onSubmit={handleSubmit}>
               <div className="p-6.5">
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
@@ -27,45 +73,63 @@ const FormLayout = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter certificate name"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   />
                 </div>
 
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Email
+                    Provider
                   </label>
                   <input
-                    type="email"
-                    placeholder="Enter your email address"
+                    type="text"
+                    value={provider}
+                    onChange={(e) => setProvider(e.target.value)}
+                    placeholder="Enter provider name"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   />
                 </div>
 
                 <div className="mb-4.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Password
+                    Description
                   </label>
                   <input
-                    type="password"
-                    placeholder="Enter password"
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter description"
+                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  />
+                </div>
+
+                <div className="mb-4.5">
+                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                    Real Price
+                  </label>
+                  <input
+                    type="number"
+                    value={realPrice}
+                    onChange={(e) => setRealPrice(e.target.value)}
+                    placeholder="Enter real price"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   />
                 </div>
 
                 <div className="mb-5.5">
                   <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Re-type Password
+                    Valid Until
                   </label>
-                  <input
-                    type="password"
-                    placeholder="Re-enter password"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  />
+                  <DatePickerOne onDateChange={handleDateChange} />
                 </div>
 
-                <button className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90">
+                <button
+                  type="submit"
+                  className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
+                >
                   Save
                 </button>
               </div>
@@ -102,7 +166,7 @@ const FormLayout = () => {
               </h3>
             </div>
             <div className="flex flex-col gap-5.5 p-6.5">
-              <DatePickerOne />
+              <DatePickerOne onDateChange={handleDateChange} />
             </div>
           </div>
         </div>
